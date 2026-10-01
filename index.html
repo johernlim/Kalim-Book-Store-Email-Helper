@@ -14,8 +14,8 @@
 <body>
   <main class="card">
     <div class="brand"><span class="brand-icon" aria-hidden="true">K</span><span>KALIM BOOKSTORE</span></div>
-    <h1>Send a scanned document</h1>
-    <p class="intro">Attach your document to a Gmail draft, ready to review and send.</p>
+    <h1>Send scanned documents</h1>
+    <p class="intro">Preview your files, then attach them to a Gmail draft.</p>
     <form id="email-form">
       <div class="field">
         <label for="title">Title</label>
@@ -26,18 +26,32 @@
         <input id="email" name="email" type="email" placeholder="recipient@example.com" autocomplete="email" required>
       </div>
       <div class="field">
-        <label for="document">Scanned document</label>
+        <label for="document">Scanned documents</label>
         <div class="file-box">
-          <input id="document" name="document" type="file" aria-describedby="file-info attachment-note" required>
-          <p id="file-info">Choose a file from your computer.</p>
+          <input id="document" name="document" type="file" multiple aria-describedby="file-info attachment-note" required>
+          <p id="file-info" aria-live="polite">Choose one or more files. Maximum 20 MB in total.</p>
         </div>
+        <ul id="file-list" class="file-list" aria-label="Selected files"></ul>
+        <p class="preview-help">Click a filename to preview it here. PDF, image and text previews stay on this device.</p>
       </div>
-      <p class="note" id="attachment-note">Connect your Google account when prompted. Keep this page open to reuse the connection for more documents. Your file will be attached to a draft for you to review and send in Gmail.</p>
+      <p class="note" id="attachment-note">Connect your Google account when prompted. Keep this page open to reuse the connection. All selected files will be attached to a draft for you to review and send in Gmail.</p>
       <p class="note" id="sender-note" aria-live="polite"></p>
       <button type="submit"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M3 5h18v14H3z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="m3 5 9 7 9-7" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>Sent</button>
       <p id="status" role="status" aria-live="polite"></p>
     </form>
-    <footer>Your file uploads directly to the Gmail account you authorize. This page does not store your documents.</footer>
+    <footer>Your files upload directly to the Gmail account you authorize when you click Sent. This page does not store your documents.</footer>
   </main>
+  <dialog id="preview-dialog" aria-labelledby="preview-title">
+    <header class="preview-header">
+      <div><span class="preview-label">FILE PREVIEW</span><h2 id="preview-title"></h2><p id="preview-details"></p></div>
+      <button id="close-preview" class="secondary-button" type="button" autofocus>Close</button>
+    </header>
+    <div id="preview-content" class="preview-content" aria-busy="false"></div>
+    <div id="pdf-controls" class="pdf-controls" hidden>
+      <button id="previous-page" class="secondary-button" type="button" aria-label="Previous PDF page">Previous</button>
+      <span id="page-number" aria-live="polite"></span>
+      <button id="next-page" class="secondary-button" type="button" aria-label="Next PDF page">Next</button>
+    </div>
+  </dialog>
 </body>
 </html>

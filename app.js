@@ -1,7 +1,9 @@
-import { buildMessage, MAX_FILE_BYTES } from './message.mjs';
+import { buildMessage, validateFiles } from './message.mjs';
+import { openPreview, closePreview, formatSize } from './preview.mjs';
 const form = document.querySelector('#email-form');
 const fileInput = document.querySelector('#document');
 const fileInfo = document.querySelector('#file-info');
+const fileList = document.querySelector('#file-list');
 const status = document.querySelector('#status');
 const titleInput = document.querySelector('#title');
 const senderNote = document.querySelector('#sender-note');
@@ -14,9 +16,28 @@ let senderEmail = '';
 const clientId = window.KALIM_CONFIG?.googleClientId?.trim();
 if (!clientId) status.textContent = 'One-time Google setup is needed. Follow GOOGLE-SETUP.md and add your OAuth client ID to config.js.';
 fileInput.addEventListener('change', () => {
-  const file = fileInput.files[0];
-  fileInput.setCustomValidity(file && file.size > MAX_FILE_BYTES ? 'Choose a file smaller than 20 MB.' : '');
-  fileInfo.textContent = file ? `${file.name} · ${(file.size / 1048576).toFixed(2)} MB · Maximum 20 MB` : 'Choose a file from your computer.';
+  const files = Array.from(fileInput.files);
+  lastDraft = null;
+  closePreview();
+  const error = validateFiles(files);
+  fileInput.setCustomValidity(error);
+  const total = files.reduce((sum, file) => sum + file.size, 0);
+  fileInfo.textContent = files.length ? `${files.length} file${files.length === 1 ? '' : 's'} selected · ${formatSize(total)} total · Maximum 20 MB${error ? ' — ' + error : ''}` : 'Choose one or more files. Maximum 20 MB in total.';
+  fileList.replaceChildren();
+  for (const file of files) {
+    const item = document.createElement('li');
+    const name = document.createElement('button');
+    name.type = 'button';
+    name.className = 'file-preview-button';
+    name.textContent = file.name;
+    name.setAttribute('aria-label', `Preview ${file.name}`);
+    name.addEventListener('click', () => openPreview(file));
+    const size = document.createElement('span');
+    size.className = 'file-size';
+    size.textContent = formatSize(file.size);
+    item.append(name, size);
+    fileList.append(item);
+  }
 });
 titleInput.addEventListener('input', () => titleInput.setCustomValidity(''));
 form.addEventListener('input', () => { lastDraft = null; });
@@ -29,7 +50,7 @@ function forgetToken() { accessToken = ''; tokenExpiresAt = 0; }
 
 async function createDraft(input) {
   try {
-    status.textContent = 'Creating your Gmail draft and attaching the document…';
+    status.textContent = `Creating your Gmail draft and attaching ${input.files.length} file${input.files.length === 1 ? '' : 's'}…`;
     const headers = { Authorization: `Bearer ${accessToken}` };
     if (!senderEmail) {
       const profileResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', { headers });
@@ -47,13 +68,13 @@ async function createDraft(input) {
     const result = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/drafts', { method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: JSON.stringify({ message: { raw } }) });
     if (!result.ok) {
       if (result.status === 401) forgetToken();
-      const errors = { 401: 'Google authorization expired. Click Sent to reconnect.', 403: 'Check that the Gmail API is enabled and the sender is an allowed test user.', 413: 'This attachment is too large. Choose a smaller file.', 429: 'Gmail is limiting requests. Please wait before trying again.' };
+      const errors = { 401: 'Google authorization expired. Click Sent to reconnect.', 403: 'Check that the Gmail API is enabled and the sender is an allowed test user.', 413: 'These attachments are too large. Choose fewer or smaller files.', 429: 'Gmail is limiting requests. Please wait before trying again.' };
       throw new Error(errors[result.status] || `Gmail could not confirm the draft (${result.status}). Check Gmail Drafts before trying again.`);
     }
     // Gmail has no documented API-to-compose deep link. Open this account's Drafts.
     const url = `https://mail.google.com/mail/u/?authuser=${encodeURIComponent(senderEmail)}#drafts`;
     lastDraft = url;
-    status.replaceChildren(document.createTextNode(`Draft created for ${input.recipient}, with “${input.file.name}” attached. Sender: ${senderEmail}. `));
+    status.replaceChildren(document.createTextNode(`Draft created for ${input.recipient} with ${input.files.length} file${input.files.length === 1 ? '' : 's'} attached: ${input.files.map(file => file.name).join(', ')}. Sender: ${senderEmail}. `));
     const link = document.createElement('a');
     link.href = url; link.target = '_blank'; link.rel = 'noopener noreferrer'; link.textContent = 'Open Gmail Drafts';
     status.append(link, document.createTextNode(' and open your new draft to review and send.'));
@@ -67,10 +88,11 @@ form.addEventListener('submit', (event) => {
   event.preventDefault();
   if (busy) return;
   titleInput.setCustomValidity(titleInput.value.trim() ? '' : 'Enter an email title.');
+  fileInput.setCustomValidity(validateFiles(Array.from(fileInput.files)));
   if (!form.reportValidity()) return;
   if (lastDraft) { window.open(lastDraft, '_blank', 'noopener,noreferrer'); return; }
   if (!clientId) { status.textContent = 'Google setup is not complete. Add your Google OAuth client ID to config.js first.'; return; }
-  const input = { recipient: document.querySelector('#email').value.trim(), subject: titleInput.value.trim(), file: fileInput.files[0] };
+  const input = { recipient: document.querySelector('#email').value.trim(), subject: titleInput.value.trim(), files: Array.from(fileInput.files) };
   setBusy(true);
   if (accessToken && Date.now() < tokenExpiresAt) return createDraft(input);
   forgetToken();
@@ -82,7 +104,7 @@ form.addEventListener('submit', (event) => {
       scope: 'https://www.googleapis.com/auth/gmail.compose https://www.googleapis.com/auth/userinfo.email',
       include_granted_scopes: false,
       callback: async (response) => {
-        if (response.error || !response.access_token) { status.textContent = 'Google access was not granted. Your file has not been uploaded.'; setBusy(false); return; }
+        if (response.error || !response.access_token) { status.textContent = 'Google access was not granted. Your files have not been uploaded.'; setBusy(false); return; }
         if (!google.accounts.oauth2.hasGrantedAllScopes(response, 'https://www.googleapis.com/auth/gmail.compose', 'https://www.googleapis.com/auth/userinfo.email')) {
           response.access_token = '';
           status.textContent = 'Allow Gmail draft access and email address access to continue.';

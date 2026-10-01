@@ -10,17 +10,17 @@ test('reuses valid authorization, renews expired or rejected tokens, and handles
     }
   });
   const element = (value = '') => ({
-    value, textContent: '', listeners: {}, disabled: false,
+    value, textContent: '', listeners: {}, disabled: false, children: [],
     addEventListener(event, fn) { this.listeners[event] = fn; },
     setCustomValidity() {}, setAttribute() {}, reportValidity() { return true; },
-    replaceChildren() {}, append() {},
+    replaceChildren(...children) { this.children = children; }, append(...children) { this.children.push(...children); },
   });
-  const nodes = Object.fromEntries(['email-form', 'document', 'file-info', 'status', 'title', 'sender-note', 'email'].map(id => [id, element()]));
+  const nodes = Object.fromEntries(['email-form', 'document', 'file-info', 'file-list', 'status', 'title', 'sender-note', 'email'].map(id => [id, element()]));
   const form = nodes['email-form'];
   form.elements = [nodes.title, nodes.email, nodes.document];
   nodes.title.value = 'Kalim test';
   nodes.email.value = 'receiver@example.com';
-  nodes.document.files = [new File(['harmless sample'], 'test.txt', { type: 'text/plain' })];
+  nodes.document.files = [new File(['harmless sample'], 'test.txt', { type: 'text/plain' }), new File(['second sample'], 'second.txt', { type: 'text/plain' })];
   globalThis.document = {
     querySelector: selector => nodes[selector.slice(1)],
     createElement: () => element(), createTextNode: text => text,
@@ -48,6 +48,8 @@ test('reuses valid authorization, renews expired or rejected tokens, and handles
     }
     assert.equal(url, 'https://gmail.googleapis.com/gmail/v1/users/me/drafts');
     assert.ok(JSON.parse(options.body).message.raw);
+    const mime = Buffer.from(JSON.parse(options.body).message.raw, 'base64url').toString('utf8');
+    assert.equal((mime.match(/Content-Disposition: attachment/g) || []).length, 2);
     draftCount++;
     return { ok: draftStatus === 200, status: draftStatus };
   };
@@ -57,6 +59,11 @@ test('reuses valid authorization, renews expired or rejected tokens, and handles
   const submit = () => form.listeners.submit({ preventDefault() {} });
   const change = () => form.listeners.input();
   const authorize = () => authConfig.callback({ access_token: `test-token-${authRequests.length}`, expires_in: 3600 });
+
+  nodes.document.listeners.change();
+  assert.equal(nodes['file-list'].children.length, 2);
+  assert.equal(nodes['file-list'].children[0].children[0].textContent, 'test.txt');
+  assert.match(nodes['file-info'].textContent, /2 files selected/);
 
   submit();
   assert.equal(authRequests.length, 1);
