@@ -1,22 +1,25 @@
 # Kalim Book Store Email Helper
 
-A simple, responsive HTML form for preparing scanned-document emails. Styled with a dark card and mint accents.
+A responsive HTML form with a prefilled title, receiver email, file picker, and one **Sent** button. Creates a Gmail draft with the selected file attached using Google Identity Services and the Gmail API.
+
+## Setup
+
+Follow [GOOGLE-SETUP.md](GOOGLE-SETUP.md), then put your public OAuth client ID in `config.js`. No client secret or backend is needed. The sender is the Google account chosen during authorization. The form email is the receiver.
 
 ## Use
 
-1. Keep or edit the prefilled title: **Kalim BookStore Scanned Document**.
-2. Enter the receiver email and select a file from your computer.
-3. Click **Sent** to open Gmail with the receiver and subject filled in.
-4. Attach the selected file in Gmail and click Gmail's **Send** button.
+Enter the receiver, select a document (up to 20 MB), and click **Sent**. Choose the sender's Google account and authorize access. The app creates a draft with the file attached, then opens Gmail Drafts. Open the new draft, review it, and click Gmail's Send button.
 
-The page does not send email itself or upload/store files. A Gmail compose URL cannot attach a local file. Automatic attachments require Google OAuth authorization and the Gmail API to create a draft containing a MIME attachment. See [Google's Gmail API guide](https://developers.google.com/workspace/gmail/api/guides/sending).
+Gmail has no documented API-to-compose URL for opening an API-created draft directly. The page opens the authorized account's Drafts folder and provides a fallback link if the browser blocks the new tab. Clicking Sent again without changing the form reopens Drafts without creating another draft.
 
-## Preview
+Documents upload directly from the browser to Google. Access tokens stay in memory only. The app has no analytics, document storage, or server. Gmail compose permissions include sending and draft management; this code only calls create-draft.
 
-Open `index.html` in a browser. There are no dependencies or build steps.
+## Preview and check
+
+Serve the folder over HTTP, for example `python -m http.server 8080`, then open `http://localhost:8080`. Modules and OAuth require HTTP/HTTPS. Add this localhost origin to your OAuth client for local testing.
+
+Run `node --test message.test.mjs` for binary attachment, Unicode, header injection, and size checks. Live Google authorization and draft creation require a configured client ID and a sender account and must be verified after setup.
 
 ## GitHub Pages
 
-In the repository, choose **Settings → Pages → Deploy from a branch → main → /(root) → Save**. All assets use relative paths and work under a repository URL.
-
-Only application source belongs in this repository. Do not commit scanned files or credentials.
+In repository Settings → Pages, select Deploy from a branch → main → /(root) → Save. No build step is needed. Never commit scanned documents or credentials.

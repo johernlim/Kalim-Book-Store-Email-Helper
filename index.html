@@ -7,13 +7,15 @@
   <meta name="description" content="Prepare a scanned document email for Kalim BookStore.">
   <title>Kalim BookStore · Email Helper</title>
   <link rel="stylesheet" href="styles.css">
-  <script src="app.js" defer></script>
+  <script src="config.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="app.js" type="module"></script>
 </head>
 <body>
   <main class="card">
     <div class="brand"><span class="brand-icon" aria-hidden="true">K</span><span>KALIM BOOKSTORE</span></div>
     <h1>Send a scanned document</h1>
-    <p class="intro">Prepare your email, then finish sending it in Gmail.</p>
+    <p class="intro">Attach your document to a Gmail draft, ready to review and send.</p>
     <form id="email-form">
       <div class="field">
         <label for="title">Title</label>
@@ -30,11 +32,11 @@
           <p id="file-info">Choose a file from your computer.</p>
         </div>
       </div>
-      <p class="note" id="attachment-note">Gmail will open with your receiver and title filled in. Attach your selected file in Gmail before sending.</p>
+      <p class="note" id="attachment-note">Choose the sender’s Google account when prompted. Your file will be attached to a draft. Open that draft in Gmail to review and send.</p>
       <button type="submit"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M3 5h18v14H3z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="m3 5 9 7 9-7" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>Sent</button>
       <p id="status" role="status" aria-live="polite"></p>
     </form>
-    <footer>Your selected file stays on this device until you attach it in Gmail.</footer>
+    <footer>Your file uploads directly to the Gmail account you authorize. This page does not store your documents.</footer>
   </main>
 </body>
 </html>

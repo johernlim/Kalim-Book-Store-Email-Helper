@@ -18,6 +18,7 @@ input::file-selector-button { font: inherit; font-weight: 600; padding: 10px 12p
 .note { color: #bcccd2; font-size: .88rem; line-height: 1.65; margin: 0 0 20px; }
 button { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px; border: 1px solid #c9ffed; border-radius: 8px; background: #cefbed; color: #142b2a; font: inherit; font-weight: 700; cursor: pointer; min-height: 52px; transition: background .15s; }
 button:hover { background: #a7efd9; }
+button:disabled { cursor: wait; opacity: .7; }
 #status { color: #d0f5e9; font-size: .9rem; line-height: 1.6; overflow-wrap: anywhere; }
 #status:empty { display: none; }
 #status a { color: #d0f5e9; text-underline-offset: 3px; }
