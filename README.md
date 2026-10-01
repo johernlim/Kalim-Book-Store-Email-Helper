@@ -14,11 +14,13 @@ Gmail has no documented API-to-compose URL for opening an API-created draft dire
 
 Documents upload directly from the browser to Google. Access tokens stay in memory only. The app has no analytics, document storage, or server. Gmail compose permissions include sending and draft management; this code only calls create-draft.
 
+The page reuses a valid Google access token for subsequent documents in the same open tab. It requests a new token only after expiry or a rejected token, with the previous sender as an account hint. Google controls whether another prompt is required. Reloading or closing the page clears the connection; reload to choose a different sender. Initial permission is still required.
+
 ## Preview and check
 
 Serve the folder over HTTP, for example `python -m http.server 8080`, then open `http://localhost:8080`. Modules and OAuth require HTTP/HTTPS. Add this localhost origin to your OAuth client for local testing.
 
-Run `node --test message.test.mjs` for binary attachment, Unicode, header injection, and size checks. Live Google authorization and draft creation require a configured client ID and a sender account and must be verified after setup.
+Run `node --test --test-isolation=none app.test.mjs message.test.mjs` for authorization reuse, expiry, denied access, binary attachments, Unicode, header injection, and size checks. Authorization tests simulate Google responses. Live Google authorization and draft creation require a configured client ID and a sender account and must be verified after setup.
 
 ## GitHub Pages
 

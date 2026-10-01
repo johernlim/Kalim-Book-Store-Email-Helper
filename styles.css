@@ -21,6 +21,7 @@ button:hover { background: #a7efd9; }
 button:disabled { cursor: wait; opacity: .7; }
 #status { color: #d0f5e9; font-size: .9rem; line-height: 1.6; overflow-wrap: anywhere; }
 #status:empty { display: none; }
+#sender-note:empty { display: none; }
 #status a { color: #d0f5e9; text-underline-offset: 3px; }
 footer { margin-top: 24px; border-top: 1px solid #344148; padding-top: 18px; color: #95aab5; font-size: .8rem; line-height: 1.6; }
 @media (max-width: 480px) { body { padding: 20px 14px; } .card { padding: 26px 22px; } }
