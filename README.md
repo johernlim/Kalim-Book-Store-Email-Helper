@@ -12,9 +12,9 @@ Enter the receiver and select one or more files (up to **20 MB combined**). Ther
 
 PDFs render with locally hosted Mozilla PDF.js and Previous/Next page controls. Images use the browser's image decoder. Text files show as literal text (first 1 MB for large files). Unsupported formats, password-protected PDFs, and damaged files show an explanation without downloading or launching another application; they can still be attached. Previews stay on the device and do not upload documents to a preview service.
 
-Click **Sent**, choose the sender's Google account if prompted, and authorize access. The app creates one draft with **all selected files** attached, then opens Gmail Drafts. Open the new draft, review it, and click Gmail's Send button.
+Click **Sent**, choose the sender's Google account if prompted, and authorize access. The app creates one draft with **all selected files** attached, then attempts to open that message in Gmail's compose window with an empty body. Review it and click Gmail's Send button.
 
-Gmail has no documented API-to-compose URL for opening an API-created draft directly. The page opens the authorized account's Drafts folder and provides a fallback link if the browser blocks the new tab. Clicking Sent again without changing the form reopens Drafts without creating another draft.
+The direct compose link uses the returned message ID (not the draft ID). Gmail does not document this UI route, so it may change or fail to open the message. A Drafts fallback link is always shown. Clicking Sent again without changing the form reopens the same link without creating another draft. The message remains a draft until sent. Direct compose navigation needs a live-account check; automated tests only verify the generated URL.
 
 Documents upload directly from the browser to Google. Access tokens stay in memory only. The app has no analytics, document storage, or server. Gmail compose permissions include sending and draft management; this code only calls create-draft.
 

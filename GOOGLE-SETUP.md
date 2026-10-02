@@ -13,7 +13,7 @@ The simplest arrangement is to sign in to Google Cloud with the Gmail account yo
 9. Commit and deploy the configuration. Open the page, enter a test receiver you control, select a harmless sample file, and click **Sent**. Choose your sender account and grant the requested permissions yourself.
 10. Verify the new Gmail draft has the expected sender, receiver, subject, and attachment. Open the draft and click Send in Gmail when ready.
 
-The app opens Gmail Drafts because Gmail provides no documented API-to-compose link for opening a particular API-created draft directly. The file is already attached; open the new draft to review it.
+The app attempts to open the attached message directly in Gmail compose. This Gmail UI link is undocumented; if it does not open, use the provided Drafts fallback link and open the new message.
 
 Testing apps are limited to their configured test users and may need repeat consent. Gmail compose is a restricted scope that allows managing drafts and sending email; this app only creates drafts. A broadly available public app may require Google verification. Review Google's requirements before expanding access beyond your own configured accounts.
 

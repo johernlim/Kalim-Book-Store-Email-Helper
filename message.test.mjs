@@ -7,6 +7,8 @@ test('preserves every attachment and UTF-8 headers, including duplicate filename
   const files = [new File([bytes], '扫描.pdf', { type: 'application/pdf' }), new File([second], '扫描.pdf', { type: 'application/pdf' }), new File([], 'empty.txt')];
   const raw = await buildMessage({ recipient: 'receiver@example.com', sender: 'sender@example.com', subject: '扫描 Document', files });
   const mime = Buffer.from(raw, 'base64url').toString('utf8');
+  const textPart = mime.split(/--kalim_[^\r\n]+\r\n/).find(part => part.startsWith('Content-Type: text/plain'));
+  assert.equal(textPart.split('\r\n\r\n')[1].trim(), '', 'email body is empty');
   assert.match(mime, /To: receiver@example.com\r\nFrom: sender@example.com/);
   assert.ok(mime.includes(Buffer.from('扫描 Document').toString('base64')));
   assert.ok(mime.includes("filename*=UTF-8''%E6%89%AB%E6%8F%8F.pdf"));

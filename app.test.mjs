@@ -36,7 +36,8 @@ test('reuses valid authorization, renews expired or rejected tokens, and handles
     hasGrantedAllScopes: () => scopesGranted,
   };
   globalThis.google = { accounts: { oauth2 } };
-  globalThis.window = { KALIM_CONFIG: { googleClientId: 'test-client' }, google, open() {} };
+  const opened = [];
+  globalThis.window = { KALIM_CONFIG: { googleClientId: 'test-client' }, google, open(url) { opened.push(url); } };
   let draftCount = 0;
   let draftStatus = 200;
   let profileCount = 0;
@@ -51,7 +52,7 @@ test('reuses valid authorization, renews expired or rejected tokens, and handles
     const mime = Buffer.from(JSON.parse(options.body).message.raw, 'base64url').toString('utf8');
     assert.equal((mime.match(/Content-Disposition: attachment/g) || []).length, 2);
     draftCount++;
-    return { ok: draftStatus === 200, status: draftStatus };
+    return { ok: draftStatus === 200, status: draftStatus, json: async () => ({ id: 'draft-id', message: { id: 'message-id' } }) };
   };
   let now = 1_000_000;
   t.mock.method(Date, 'now', () => now);
@@ -69,6 +70,8 @@ test('reuses valid authorization, renews expired or rejected tokens, and handles
   assert.equal(authRequests.length, 1);
   await authorize();
   assert.equal(draftCount, 1);
+  assert.equal(opened.at(-1), 'https://mail.google.com/mail/u/?authuser=sender%40example.com#drafts?compose=message-id');
+  assert.ok(nodes.status.children.some(child => child.href === 'https://mail.google.com/mail/u/?authuser=sender%40example.com#drafts'));
   assert.match(nodes['sender-note'].textContent, /sender@example.com/);
   await submit();
   assert.equal(draftCount, 1, 'unchanged form only reopens existing draft');

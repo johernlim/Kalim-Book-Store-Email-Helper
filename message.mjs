@@ -31,7 +31,7 @@ export async function buildMessage({ recipient, sender, subject, files }) {
     `To: ${recipient}`, `From: ${sender}`, `Subject: ${encodedHeader(subject)}`,
     'MIME-Version: 1.0', `Content-Type: multipart/mixed; boundary="${boundary}"`, '',
     `--${boundary}`, 'Content-Type: text/plain; charset=UTF-8', 'Content-Transfer-Encoding: base64', '',
-    base64(utf8('Please find the scanned documents attached.')), '',
+    '', '',
   ];
   // Read each file in order; every attachment gets its own MIME part.
   for (const file of files) {

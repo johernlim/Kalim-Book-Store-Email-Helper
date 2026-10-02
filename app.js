@@ -71,13 +71,21 @@ async function createDraft(input) {
       const errors = { 401: 'Google authorization expired. Click Sent to reconnect.', 403: 'Check that the Gmail API is enabled and the sender is an allowed test user.', 413: 'These attachments are too large. Choose fewer or smaller files.', 429: 'Gmail is limiting requests. Please wait before trying again.' };
       throw new Error(errors[result.status] || `Gmail could not confirm the draft (${result.status}). Check Gmail Drafts before trying again.`);
     }
-    // Gmail has no documented API-to-compose deep link. Open this account's Drafts.
-    const url = `https://mail.google.com/mail/u/?authuser=${encodeURIComponent(senderEmail)}#drafts`;
+    // Gmail's compose route is undocumented; retain Drafts as a recovery link.
+    const draft = await result.json();
+    const draftsUrl = `https://mail.google.com/mail/u/?authuser=${encodeURIComponent(senderEmail)}#drafts`;
+    const messageId = draft.message?.id;
+    const url = messageId ? `${draftsUrl}?compose=${encodeURIComponent(messageId)}` : draftsUrl;
     lastDraft = url;
     status.replaceChildren(document.createTextNode(`Draft created for ${input.recipient} with ${input.files.length} file${input.files.length === 1 ? '' : 's'} attached: ${input.files.map(file => file.name).join(', ')}. Sender: ${senderEmail}. `));
     const link = document.createElement('a');
-    link.href = url; link.target = '_blank'; link.rel = 'noopener noreferrer'; link.textContent = 'Open Gmail Drafts';
-    status.append(link, document.createTextNode(' and open your new draft to review and send.'));
+    link.href = url; link.target = '_blank'; link.rel = 'noopener noreferrer'; link.textContent = messageId ? 'Open Gmail compose' : 'Open Gmail Drafts';
+    status.append(link, document.createTextNode(' to review and send. '));
+    if (messageId) {
+      const fallback = document.createElement('a');
+      fallback.href = draftsUrl; fallback.target = '_blank'; fallback.rel = 'noopener noreferrer'; fallback.textContent = 'Find it in Drafts';
+      status.append(document.createTextNode('If the message does not open, '), fallback, document.createTextNode('.'));
+    }
     window.open(url, '_blank', 'noopener,noreferrer');
   } catch (error) {
     status.textContent = error instanceof TypeError ? 'Connection interrupted. Check Gmail Drafts before retrying to avoid duplicates.' : error.message;
