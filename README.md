@@ -8,7 +8,7 @@ Follow [GOOGLE-SETUP.md](GOOGLE-SETUP.md), then put your public OAuth client ID 
 
 ## Use
 
-Before the form appears, click **Check pop-ups**. The site opens and closes a blank window. If blocked, it shows instructions to allow pop-ups for this site and retry. A successful click reveals the form. This checks a user-initiated window only: it cannot read or change the browser's persistent popup permission or guarantee future asynchronous popups. The check repeats on page load, while any permission saved in the browser is managed by the browser. No files or Google access are involved in this check.
+On arrival, a remembered successful pop-up check opens the form directly. Otherwise the page tries opening and closing a blank window automatically, so browsers that already allow pop-ups also go straight to the form. If blocked, the setup screen explains how to allow pop-ups and offers **Check pop-ups** to retry. A successful check stores only a `kalim-email-helper:popup-setup-complete` flag in localStorage. Storage failures do not block the current visit. This flag remembers setup, not the browser's actual permission; later popup restrictions still use the existing Gmail navigation fallback. Clearing site data resets setup. No files or Google credentials are stored by this check.
 
 Enter the receiver and select one or more files (up to **20 MB combined**). There is no separate file-count limit. Use Ctrl/Shift in the file picker to select multiple files; choosing again replaces the selection. Each filename and size appears below the picker. Click a filename to open its preview inside the page, then close it to return to the form.
 

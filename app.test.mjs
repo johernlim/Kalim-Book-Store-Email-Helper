@@ -39,9 +39,11 @@ test('reuses valid authorization, renews expired or rejected tokens, and handles
   const opened = [];
   const navigated = [];
   const popups = [];
-  let blockPopup = false;
+  let blockPopup = true;
+  const storage = new Map();
   globalThis.window = {
     KALIM_CONFIG: { googleClientId: 'test-client' }, google,
+    localStorage: { getItem(key) { return storage.get(key); }, setItem(key, value) { storage.set(key, value); } },
     location: { assign(url) { navigated.push(url); } },
     open(url) {
       opened.push(url);
@@ -87,6 +89,7 @@ test('reuses valid authorization, renews expired or rejected tokens, and handles
   assert.equal(nodes['popup-setup'].hidden, true);
   assert.equal(form.hidden, false);
   assert.equal(popups.at(-1).closed, true, 'check closes its blank window');
+  assert.equal(storage.get('kalim-email-helper:popup-setup-complete'), 'true');
   opened.length = 0;
 
   nodes.document.listeners.change();
@@ -145,4 +148,25 @@ test('reuses valid authorization, renews expired or rejected tokens, and handles
   await authorize();
   assert.equal(draftCount, beforeReconnect, 'missing permissions prevent upload');
   assert.match(nodes.status.textContent, /Allow Gmail draft access/);
+
+  form.hidden = true;
+  nodes['popup-setup'].hidden = false;
+  blockPopup = true;
+  const beforeReload = opened.length;
+  await import('./app.js?remembered-setup-test');
+  assert.equal(form.hidden, false, 'return visit goes straight to form');
+  assert.equal(nodes['popup-setup'].hidden, true);
+  assert.equal(opened.length, beforeReload, 'remembered setup does not open a test window');
+
+  storage.clear();
+  form.hidden = true;
+  nodes['popup-setup'].hidden = false;
+  blockPopup = false;
+  await import('./app.js?already-allowed-test');
+  assert.equal(form.hidden, false, 'already allowed popups reveal form automatically');
+
+  window.localStorage = { getItem() { throw new Error('Unavailable'); }, setItem() { throw new Error('Unavailable'); } };
+  form.hidden = true;
+  await import('./app.js?storage-unavailable-test');
+  assert.equal(form.hidden, false, 'storage restrictions do not block access');
 });

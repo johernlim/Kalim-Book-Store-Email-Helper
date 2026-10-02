@@ -10,20 +10,29 @@ const senderNote = document.querySelector('#sender-note');
 const popupSetup = document.querySelector('#popup-setup');
 const popupStatus = document.querySelector('#popup-status');
 let popupCheckPassed = false;
-document.querySelector('#check-popups').addEventListener('click', () => {
-  let probe;
-  try { probe = window.open('about:blank', '_blank'); } catch { /* Browser or extension blocked the check. */ }
-  if (!probe || probe.closed) {
-    popupStatus.textContent = 'The check window was blocked. Allow pop-ups for this site using the steps above, then click Check pop-ups again.';
-    return;
-  }
-  probe.opener = null;
-  probe.close();
+const popupSetupKey = 'kalim-email-helper:popup-setup-complete';
+function showEmailForm(focus = false) {
   popupCheckPassed = true;
   popupSetup.hidden = true;
   form.hidden = false;
-  document.querySelector('#email').focus();
-});
+  if (focus) document.querySelector('#email').focus();
+}
+function checkPopups(focus = false) {
+  let probe;
+  try { probe = window.open('about:blank', '_blank'); } catch { /* Browser or extension blocked the check. */ }
+  if (!probe || probe.closed) {
+    if (focus) popupStatus.textContent = 'The check window was blocked. Allow pop-ups for this site using the steps above, then click Check pop-ups again.';
+    return;
+  }
+  try { probe.opener = null; probe.close(); } catch { /* Window cleanup must not block the form. */ }
+  try { window.localStorage.setItem(popupSetupKey, 'true'); } catch { /* Continue even when storage is unavailable. */ }
+  showEmailForm(focus);
+}
+document.querySelector('#check-popups').addEventListener('click', () => checkPopups(true));
+let setupRemembered = false;
+try { setupRemembered = window.localStorage.getItem(popupSetupKey) === 'true'; } catch { /* Check without storage. */ }
+if (setupRemembered) showEmailForm();
+else checkPopups();
 let busy = false;
 let lastDraft = null;
 // Reuse authorization only in this tab's memory, and stop before its expiry.

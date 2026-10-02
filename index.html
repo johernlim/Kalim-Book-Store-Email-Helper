@@ -6,10 +6,10 @@
   <meta name="theme-color" content="#0c1418">
   <meta name="description" content="Prepare a scanned document email for Kalim BookStore.">
   <title>Kalim BookStore · Email Helper</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=popup-remember-1">
   <script src="config.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="app.js" type="module"></script>
+  <script src="app.js?v=popup-remember-1" type="module"></script>
 </head>
 <body>
   <main class="card">
@@ -18,13 +18,13 @@
     <p class="intro">Preview your files, then open Gmail to review and send.</p>
     <section id="popup-setup" class="popup-setup" aria-labelledby="popup-heading">
       <h2 id="popup-heading">Before you start</h2>
-      <p>Allow pop-ups for this site so Google sign-in can open. Click below to check that your browser can open a window.</p>
+      <p>Allow pop-ups for this site so Google sign-in can open. If already allowed, the form opens automatically. Otherwise, follow these steps and check again.</p>
       <ol>
         <li>If blocked, click the pop-up blocked icon in your browser's address bar.</li>
         <li>Choose <strong>Always allow pop-ups and redirects from this site</strong>, then click <strong>Done</strong>.</li>
         <li>Click <strong>Check pop-ups</strong> again to continue.</li>
       </ol>
-      <p class="note">You can also use your browser's site settings to allow pop-ups and redirects. This check opens and closes a blank window; it does not change your browser settings or access Gmail.</p>
+      <p class="note">You can also use your browser's site settings to allow pop-ups and redirects. This check opens and closes a blank window without accessing Gmail. We remember successful setup in this browser so you can go straight to the form next time.</p>
       <button id="check-popups" type="button">Check pop-ups</button>
       <p id="popup-status" role="status" aria-live="polite"></p>
     </section>
