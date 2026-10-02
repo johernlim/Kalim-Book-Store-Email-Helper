@@ -37,7 +37,21 @@ test('reuses valid authorization, renews expired or rejected tokens, and handles
   };
   globalThis.google = { accounts: { oauth2 } };
   const opened = [];
-  globalThis.window = { KALIM_CONFIG: { googleClientId: 'test-client' }, google, open(url) { opened.push(url); } };
+  const navigated = [];
+  const popups = [];
+  let blockPopup = false;
+  globalThis.window = {
+    KALIM_CONFIG: { googleClientId: 'test-client' }, google,
+    location: { assign(url) { navigated.push(url); } },
+    open(url) {
+      opened.push(url);
+      if (blockPopup) return null;
+      const popup = { opener: window, document: { title: '', body: {} }, closed: false,
+        location: { replace(url) { navigated.push(url); } }, close() { this.closed = true; } };
+      popups.push(popup);
+      return popup;
+    },
+  };
   let draftCount = 0;
   let draftStatus = 200;
   let profileCount = 0;
@@ -70,16 +84,26 @@ test('reuses valid authorization, renews expired or rejected tokens, and handles
   assert.equal(authRequests.length, 1);
   await authorize();
   assert.equal(draftCount, 1);
-  assert.equal(opened.at(-1), 'https://mail.google.com/mail/u/?authuser=sender%40example.com#drafts?compose=message-id');
+  assert.equal(navigated.at(-1), 'https://mail.google.com/mail/u/?authuser=sender%40example.com#drafts?compose=message-id');
+  assert.equal(opened.length, 0, 'authorization flow navigates this tab without a second popup');
   assert.ok(nodes.status.children.some(child => child.href === 'https://mail.google.com/mail/u/?authuser=sender%40example.com#drafts'));
   assert.match(nodes['sender-note'].textContent, /sender@example.com/);
   await submit();
   assert.equal(draftCount, 1, 'unchanged form only reopens existing draft');
   change();
-  await submit();
+  const creating = submit();
+  assert.equal(opened.at(-1), 'about:blank', 'window opens synchronously before upload finishes');
+  assert.equal(popups.at(-1).opener, null);
+  await creating;
   assert.equal(draftCount, 2);
   assert.equal(authRequests.length, 1, 'second document reuses authorization');
   assert.equal(profileCount, 1, 'cached identity belongs to cached token');
+  blockPopup = true;
+  change();
+  const beforeFallback = navigated.length;
+  await submit();
+  assert.equal(navigated.length, beforeFallback + 1, 'blocked popup automatically navigates current tab');
+  blockPopup = false;
 
   now += 3_600_000;
   change();
@@ -92,6 +116,7 @@ test('reuses valid authorization, renews expired or rejected tokens, and handles
   draftStatus = 401;
   change();
   await submit();
+  assert.equal(popups.at(-1).closed, true, 'failed upload closes the waiting window');
   const beforeReconnect = draftCount;
   assert.match(nodes.status.textContent, /expired/);
   submit();

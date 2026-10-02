@@ -48,7 +48,26 @@ function setBusy(value) {
 }
 function forgetToken() { accessToken = ''; tokenExpiresAt = 0; }
 
-async function createDraft(input) {
+function reserveGmailWindow() {
+  // Open during the click, before uploads consume the browser's user activation.
+  const popup = window.open('about:blank', '_blank');
+  if (popup) {
+    popup.opener = null;
+    popup.document.title = 'Preparing your Gmail message';
+    popup.document.body.textContent = 'Attaching your files… Gmail will open here automatically when ready.';
+  }
+  return popup;
+}
+
+function navigateToGmail(url, popup) {
+  if (popup && !popup.closed) {
+    try { popup.location.replace(url); return; } catch { /* Use this tab if the window became unavailable. */ }
+  }
+  // Authorization already uses a popup. This tab needs no second popup permission.
+  window.location.assign(url);
+}
+
+async function createDraft(input, popup = null) {
   try {
     status.textContent = `Creating your Gmail draft and attaching ${input.files.length} file${input.files.length === 1 ? '' : 's'}…`;
     const headers = { Authorization: `Bearer ${accessToken}` };
@@ -86,8 +105,9 @@ async function createDraft(input) {
       fallback.href = draftsUrl; fallback.target = '_blank'; fallback.rel = 'noopener noreferrer'; fallback.textContent = 'Find it in Drafts';
       status.append(document.createTextNode('If the message does not open, '), fallback, document.createTextNode('.'));
     }
-    window.open(url, '_blank', 'noopener,noreferrer');
+    navigateToGmail(url, popup);
   } catch (error) {
+    if (popup && !popup.closed) popup.close();
     status.textContent = error instanceof TypeError ? 'Connection interrupted. Check Gmail Drafts before retrying to avoid duplicates.' : error.message;
   } finally { setBusy(false); }
 }
@@ -98,11 +118,11 @@ form.addEventListener('submit', (event) => {
   titleInput.setCustomValidity(titleInput.value.trim() ? '' : 'Enter an email title.');
   fileInput.setCustomValidity(validateFiles(Array.from(fileInput.files)));
   if (!form.reportValidity()) return;
-  if (lastDraft) { window.open(lastDraft, '_blank', 'noopener,noreferrer'); return; }
+  if (lastDraft) { navigateToGmail(lastDraft, reserveGmailWindow()); return; }
   if (!clientId) { status.textContent = 'Google setup is not complete. Add your Google OAuth client ID to config.js first.'; return; }
   const input = { recipient: document.querySelector('#email').value.trim(), subject: titleInput.value.trim(), files: Array.from(fileInput.files) };
   setBusy(true);
-  if (accessToken && Date.now() < tokenExpiresAt) return createDraft(input);
+  if (accessToken && Date.now() < tokenExpiresAt) return createDraft(input, reserveGmailWindow());
   forgetToken();
   if (!window.google?.accounts?.oauth2) { status.textContent = 'Google sign-in could not load. Check your connection and reload.'; setBusy(false); return; }
   status.textContent = senderEmail ? 'Reconnecting to Google…' : 'Choose the Google account you want to send from…';

@@ -14,6 +14,8 @@ PDFs render with locally hosted Mozilla PDF.js and Previous/Next page controls. 
 
 Click **Sent**, choose the sender's Google account if prompted, and authorize access. The app creates one draft with **all selected files** attached, then attempts to open that message in Gmail's compose window with an empty body. Review it and click Gmail's Send button.
 
+When authorization is already valid, clicking Sent immediately opens a waiting tab and redirects it to Gmail after upload. After Google authorization, or if a popup is blocked or closed, the current tab automatically navigates to Gmail. No extra link click is required. Returning to the helper after same-tab navigation may require reconnecting because tokens are kept only in memory. Failed uploads close the waiting tab and leave the form available.
+
 The direct compose link uses the returned message ID (not the draft ID). Gmail does not document this UI route, so it may change or fail to open the message. A Drafts fallback link is always shown. Clicking Sent again without changing the form reopens the same link without creating another draft. The message remains a draft until sent. Direct compose navigation needs a live-account check; automated tests only verify the generated URL.
 
 Documents upload directly from the browser to Google. Access tokens stay in memory only. The app has no analytics, document storage, or server. Gmail compose permissions include sending and draft management; this code only calls create-draft.
