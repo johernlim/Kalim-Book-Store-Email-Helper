@@ -41,16 +41,17 @@ let tokenExpiresAt = 0;
 let senderEmail = '';
 const clientId = window.KALIM_CONFIG?.googleClientId?.trim();
 if (!clientId) status.textContent = 'One-time Google setup is needed. Follow GOOGLE-SETUP.md and add your OAuth client ID to config.js.';
-fileInput.addEventListener('change', () => {
+function renderSelectedFiles() {
   const files = Array.from(fileInput.files);
   lastDraft = null;
+  status.replaceChildren();
   closePreview();
   const error = validateFiles(files);
   fileInput.setCustomValidity(error);
   const total = files.reduce((sum, file) => sum + file.size, 0);
   fileInfo.textContent = files.length ? `${files.length} file${files.length === 1 ? '' : 's'} selected · ${formatSize(total)} total · Maximum 20 MB${error ? ' — ' + error : ''}` : 'Choose one or more files. Maximum 20 MB in total.';
   fileList.replaceChildren();
-  for (const file of files) {
+  for (const [index, file] of files.entries()) {
     const item = document.createElement('li');
     const name = document.createElement('button');
     name.type = 'button';
@@ -61,10 +62,26 @@ fileInput.addEventListener('change', () => {
     const size = document.createElement('span');
     size.className = 'file-size';
     size.textContent = formatSize(file.size);
-    item.append(name, size);
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'file-remove-button';
+    remove.textContent = '×';
+    remove.setAttribute('aria-label', `Remove ${file.name}`);
+    remove.title = `Remove ${file.name}`;
+    remove.addEventListener('click', () => {
+      const remaining = files.filter((_, fileIndex) => fileIndex !== index);
+      const selection = new DataTransfer();
+      for (const selectedFile of remaining) selection.items.add(selectedFile);
+      fileInput.files = selection.files;
+      renderSelectedFiles();
+      if (remaining.length) fileList.children[Math.min(index, remaining.length - 1)]?.children[2]?.focus();
+      else fileInput.focus();
+    });
+    item.append(name, size, remove);
     fileList.append(item);
   }
-});
+}
+fileInput.addEventListener('change', renderSelectedFiles);
 titleInput.addEventListener('input', () => titleInput.setCustomValidity(''));
 form.addEventListener('input', () => { lastDraft = null; });
 function setBusy(value) {

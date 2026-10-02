@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 test('reuses valid authorization, renews expired or rejected tokens, and handles denial', async (t) => {
-  const saved = new Map(['document', 'window', 'google', 'fetch'].map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
+  const saved = new Map(['document', 'window', 'google', 'fetch', 'DataTransfer'].map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
   t.after(() => {
     for (const [key, descriptor] of saved) {
       if (descriptor) Object.defineProperty(globalThis, key, descriptor);
@@ -12,7 +12,7 @@ test('reuses valid authorization, renews expired or rejected tokens, and handles
   const element = (value = '') => ({
     value, textContent: '', listeners: {}, disabled: false, children: [], focus() {},
     addEventListener(event, fn) { this.listeners[event] = fn; },
-    setCustomValidity() {}, setAttribute() {}, reportValidity() { return true; },
+    setCustomValidity(message) { this.validationMessage = message; }, setAttribute() {}, reportValidity() { return true; },
     replaceChildren(...children) { this.children = children; }, append(...children) { this.children.push(...children); },
   });
   const nodes = Object.fromEntries(['email-form', 'document', 'file-info', 'file-list', 'status', 'title', 'sender-note', 'email', 'popup-setup', 'popup-status', 'check-popups'].map(id => [id, element()]));
@@ -21,6 +21,9 @@ test('reuses valid authorization, renews expired or rejected tokens, and handles
   nodes.title.value = 'Kalim test';
   nodes.email.value = 'receiver@example.com';
   nodes.document.files = [new File(['harmless sample'], 'test.txt', { type: 'text/plain' }), new File(['second sample'], 'second.txt', { type: 'text/plain' })];
+  globalThis.DataTransfer = class {
+    constructor() { this.files = []; this.items = { add: file => this.files.push(file) }; }
+  };
   globalThis.document = {
     querySelector: selector => nodes[selector.slice(1)],
     createElement: () => element(), createTextNode: text => text,
@@ -96,6 +99,20 @@ test('reuses valid authorization, renews expired or rejected tokens, and handles
   assert.equal(nodes['file-list'].children.length, 2);
   assert.equal(nodes['file-list'].children[0].children[0].textContent, 'test.txt');
   assert.match(nodes['file-info'].textContent, /2 files selected/);
+  const originalFiles = [...nodes.document.files];
+  const firstRemove = nodes['file-list'].children[0].children[2];
+  assert.equal(firstRemove.textContent, '×');
+  assert.equal(firstRemove.listeners.click instanceof Function, true);
+  firstRemove.listeners.click();
+  assert.deepEqual(nodes.document.files.map(file => file.name), ['second.txt']);
+  assert.equal(nodes['file-list'].children.length, 1);
+  assert.match(nodes['file-info'].textContent, /1 file selected/);
+  nodes['file-list'].children[0].children[2].listeners.click();
+  assert.equal(nodes.document.files.length, 0);
+  assert.equal(nodes['file-list'].children.length, 0);
+  assert.match(nodes.document.validationMessage, /Choose at least one file/);
+  nodes.document.files = originalFiles;
+  nodes.document.listeners.change();
 
   submit();
   assert.equal(authRequests.length, 1);
