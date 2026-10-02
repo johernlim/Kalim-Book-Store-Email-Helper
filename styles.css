@@ -51,5 +51,11 @@ button:disabled { cursor: wait; opacity: .7; }
 #sender-note:empty { display: none; }
 #status a { color: #d0f5e9; text-underline-offset: 3px; }
 footer { margin-top: 24px; border-top: 1px solid #344148; padding-top: 18px; color: #95aab5; font-size: .8rem; line-height: 1.6; }
+.policy-links { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 12px; }
+footer a, .policy-page a { color: #cefbed; text-underline-offset: 3px; overflow-wrap: anywhere; }
+.policy-page { max-width: 800px; line-height: 1.7; }
+.policy-page h2 { margin: 28px 0 8px; font-size: 1.12rem; color: #d1f7eb; }
+.policy-page p { color: #c1d0d6; margin: 8px 0 16px; }
+.back-link { font-size: .9rem; }
 @media (max-width: 480px) { body { padding: 20px 14px; } .card { padding: 26px 22px; } }
 @media (max-width: 480px) { dialog { width: 96vw; height: 94svh; max-height: 94svh; } .preview-header { padding: 16px; gap: 12px; } .preview-header h2 { font-size: 1rem; } .preview-content { padding: 8px; } .pdf-controls { gap: 10px; } }

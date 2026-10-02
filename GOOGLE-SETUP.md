@@ -23,3 +23,19 @@ References:
 - https://developers.google.com/identity/oauth2/web/guides/use-token-model
 - https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.drafts/create
 - https://developers.google.com/identity/protocols/oauth2/production-readiness/restricted-scope-verification
+
+## Branding values for production
+
+In the same Google Cloud project as the client ID in `config.js`, enter:
+
+| Branding field | Value |
+| --- | --- |
+| App name | Kalim BookStore Email Helper |
+| User support email | kalimbookstore@gmail.com |
+| Application home page | https://johernlim.github.io/Kalim-Book-Store-Email-Helper/ |
+| Application privacy policy link | https://johernlim.github.io/Kalim-Book-Store-Email-Helper/privacy.html |
+| Application terms of service link | https://johernlim.github.io/Kalim-Book-Store-Email-Helper/terms.html |
+| Authorized domain | johernlim.github.io |
+| Developer contact email | kalimbookstore@gmail.com |
+
+The app logo can remain empty. Review the published privacy and terms pages, then save the Branding settings. Return to **Audience → Publish app** to request Production status. Completing the fields does not itself grant Google verification. If Google requests domain ownership or scope verification, follow the Verification Center requirements. Production still requires each sender's Google authorization, and access tokens still expire.
