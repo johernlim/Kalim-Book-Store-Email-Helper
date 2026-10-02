@@ -6,6 +6,12 @@ body { margin: 0; min-height: 100vh; min-height: 100svh; display: grid; place-it
 .brand-icon { display: grid; place-items: center; height: 34px; width: 34px; border: 1px solid #8bcfbd; border-radius: 9px; font-family: Georgia, serif; font-size: 1.4rem; }
 h1 { margin: 26px 0 10px; color: #d1f7eb; font-size: clamp(1.5rem, 5vw, 1.85rem); letter-spacing: -.035em; line-height: 1.25; }
 .intro { color: #adbcc5; line-height: 1.6; margin: 0 0 28px; }
+.popup-setup { border: 1px solid #536971; border-radius: 10px; padding: 20px; margin-bottom: 24px; }
+.popup-setup h2 { margin: 0 0 12px; color: #d1f7eb; font-size: 1.15rem; }
+.popup-setup p, .popup-setup li { color: #bcccd2; font-size: .9rem; line-height: 1.6; }
+.popup-setup ol { padding-left: 22px; }
+.popup-setup li + li { margin-top: 8px; }
+#popup-status:empty { display: none; }
 .field { margin-bottom: 22px; }
 label { display: block; color: #cce8e2; font-size: .9rem; font-weight: 600; margin-bottom: 9px; }
 input { width: 100%; font: inherit; color: #e7edef; background: #111c22; border: 1px solid #3a474f; border-radius: 7px; padding: 14px; min-height: 50px; }

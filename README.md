@@ -8,6 +8,8 @@ Follow [GOOGLE-SETUP.md](GOOGLE-SETUP.md), then put your public OAuth client ID 
 
 ## Use
 
+Before the form appears, click **Check pop-ups**. The site opens and closes a blank window. If blocked, it shows instructions to allow pop-ups for this site and retry. A successful click reveals the form. This checks a user-initiated window only: it cannot read or change the browser's persistent popup permission or guarantee future asynchronous popups. The check repeats on page load, while any permission saved in the browser is managed by the browser. No files or Google access are involved in this check.
+
 Enter the receiver and select one or more files (up to **20 MB combined**). There is no separate file-count limit. Use Ctrl/Shift in the file picker to select multiple files; choosing again replaces the selection. Each filename and size appears below the picker. Click a filename to open its preview inside the page, then close it to return to the form.
 
 PDFs render with locally hosted Mozilla PDF.js and Previous/Next page controls. Images use the browser's image decoder. Text files show as literal text (first 1 MB for large files). Unsupported formats, password-protected PDFs, and damaged files show an explanation without downloading or launching another application; they can still be attached. Previews stay on the device and do not upload documents to a preview service.

@@ -16,7 +16,20 @@
     <div class="brand"><span class="brand-icon" aria-hidden="true">K</span><span>KALIM BOOKSTORE</span></div>
     <h1>Send scanned documents</h1>
     <p class="intro">Preview your files, then open Gmail to review and send.</p>
-    <form id="email-form">
+    <section id="popup-setup" class="popup-setup" aria-labelledby="popup-heading">
+      <h2 id="popup-heading">Before you start</h2>
+      <p>Allow pop-ups for this site so Google sign-in can open. Click below to check that your browser can open a window.</p>
+      <ol>
+        <li>If blocked, click the pop-up blocked icon in your browser's address bar.</li>
+        <li>Choose <strong>Always allow pop-ups and redirects from this site</strong>, then click <strong>Done</strong>.</li>
+        <li>Click <strong>Check pop-ups</strong> again to continue.</li>
+      </ol>
+      <p class="note">You can also use your browser's site settings to allow pop-ups and redirects. This check opens and closes a blank window; it does not change your browser settings or access Gmail.</p>
+      <button id="check-popups" type="button">Check pop-ups</button>
+      <p id="popup-status" role="status" aria-live="polite"></p>
+    </section>
+    <noscript><p>Enable JavaScript to check pop-ups and prepare your email.</p></noscript>
+    <form id="email-form" hidden>
       <div class="field">
         <label for="title">Title</label>
         <input id="title" name="title" type="text" value="Kalim BookStore Scanned Document" required maxlength="200">

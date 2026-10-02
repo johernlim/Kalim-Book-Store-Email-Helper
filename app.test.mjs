@@ -10,12 +10,12 @@ test('reuses valid authorization, renews expired or rejected tokens, and handles
     }
   });
   const element = (value = '') => ({
-    value, textContent: '', listeners: {}, disabled: false, children: [],
+    value, textContent: '', listeners: {}, disabled: false, children: [], focus() {},
     addEventListener(event, fn) { this.listeners[event] = fn; },
     setCustomValidity() {}, setAttribute() {}, reportValidity() { return true; },
     replaceChildren(...children) { this.children = children; }, append(...children) { this.children.push(...children); },
   });
-  const nodes = Object.fromEntries(['email-form', 'document', 'file-info', 'file-list', 'status', 'title', 'sender-note', 'email'].map(id => [id, element()]));
+  const nodes = Object.fromEntries(['email-form', 'document', 'file-info', 'file-list', 'status', 'title', 'sender-note', 'email', 'popup-setup', 'popup-status', 'check-popups'].map(id => [id, element()]));
   const form = nodes['email-form'];
   form.elements = [nodes.title, nodes.email, nodes.document];
   nodes.title.value = 'Kalim test';
@@ -74,6 +74,20 @@ test('reuses valid authorization, renews expired or rejected tokens, and handles
   const submit = () => form.listeners.submit({ preventDefault() {} });
   const change = () => form.listeners.input();
   const authorize = () => authConfig.callback({ access_token: `test-token-${authRequests.length}`, expires_in: 3600 });
+
+  submit();
+  assert.equal(authRequests.length, 0, 'setup runs before authorization or upload');
+  blockPopup = true;
+  nodes['check-popups'].listeners.click();
+  assert.match(nodes['popup-status'].textContent, /blocked/);
+  submit();
+  assert.equal(authRequests.length, 0);
+  blockPopup = false;
+  nodes['check-popups'].listeners.click();
+  assert.equal(nodes['popup-setup'].hidden, true);
+  assert.equal(form.hidden, false);
+  assert.equal(popups.at(-1).closed, true, 'check closes its blank window');
+  opened.length = 0;
 
   nodes.document.listeners.change();
   assert.equal(nodes['file-list'].children.length, 2);

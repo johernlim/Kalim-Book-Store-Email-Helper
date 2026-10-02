@@ -7,6 +7,23 @@ const fileList = document.querySelector('#file-list');
 const status = document.querySelector('#status');
 const titleInput = document.querySelector('#title');
 const senderNote = document.querySelector('#sender-note');
+const popupSetup = document.querySelector('#popup-setup');
+const popupStatus = document.querySelector('#popup-status');
+let popupCheckPassed = false;
+document.querySelector('#check-popups').addEventListener('click', () => {
+  let probe;
+  try { probe = window.open('about:blank', '_blank'); } catch { /* Browser or extension blocked the check. */ }
+  if (!probe || probe.closed) {
+    popupStatus.textContent = 'The check window was blocked. Allow pop-ups for this site using the steps above, then click Check pop-ups again.';
+    return;
+  }
+  probe.opener = null;
+  probe.close();
+  popupCheckPassed = true;
+  popupSetup.hidden = true;
+  form.hidden = false;
+  document.querySelector('#email').focus();
+});
 let busy = false;
 let lastDraft = null;
 // Reuse authorization only in this tab's memory, and stop before its expiry.
@@ -114,6 +131,7 @@ async function createDraft(input, popup = null) {
 
 form.addEventListener('submit', (event) => {
   event.preventDefault();
+  if (!popupCheckPassed) return;
   if (busy) return;
   titleInput.setCustomValidity(titleInput.value.trim() ? '' : 'Enter an email title.');
   fileInput.setCustomValidity(validateFiles(Array.from(fileInput.files)));
