@@ -76,7 +76,8 @@ function forgetToken() { accessToken = ''; tokenExpiresAt = 0; }
 
 function reserveGmailWindow() {
   // Open during the click, before uploads consume the browser's user activation.
-  const popup = window.open('about:blank', '_blank');
+  let popup;
+  try { popup = window.open('about:blank', '_blank'); } catch { return null; }
   if (popup) {
     popup.opener = null;
     popup.document.title = 'Preparing your Gmail message';
@@ -86,11 +87,11 @@ function reserveGmailWindow() {
 }
 
 function navigateToGmail(url, popup) {
-  if (popup && !popup.closed) {
-    try { popup.location.replace(url); return; } catch { /* Use this tab if the window became unavailable. */ }
+  const gmailTab = popup && !popup.closed ? popup : reserveGmailWindow();
+  if (gmailTab) {
+    try { gmailTab.location.replace(url); return; } catch { /* Keep the helper open and provide the existing recovery link. */ }
   }
-  // Authorization already uses a popup. This tab needs no second popup permission.
-  window.location.assign(url);
+  status.append(document.createTextNode(' Gmail could not open a new tab. Allow pop-ups for this site, then click Sent again or use Open Gmail compose. Your message is already saved; retrying without changing the form will not create another copy.'));
 }
 
 async function createDraft(input, popup = null) {
@@ -173,7 +174,7 @@ form.addEventListener('submit', (event) => {
         // Resolve identity again in case Google returned a different account.
         senderEmail = '';
         senderNote.textContent = '';
-        await createDraft(input);
+        await createDraft(input, reserveGmailWindow());
       },
       error_callback: () => { status.textContent = 'Google sign-in was closed or blocked. Allow pop-ups for this page and try again.'; setBusy(false); },
     });

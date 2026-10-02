@@ -44,7 +44,7 @@ test('reuses valid authorization, renews expired or rejected tokens, and handles
   globalThis.window = {
     KALIM_CONFIG: { googleClientId: 'test-client' }, google,
     localStorage: { getItem(key) { return storage.get(key); }, setItem(key, value) { storage.set(key, value); } },
-    location: { assign(url) { navigated.push(url); } },
+    location: { assign() { assert.fail('The helper tab must never navigate away'); } },
     open(url) {
       opened.push(url);
       if (blockPopup) return null;
@@ -102,7 +102,8 @@ test('reuses valid authorization, renews expired or rejected tokens, and handles
   await authorize();
   assert.equal(draftCount, 1);
   assert.equal(navigated.at(-1), 'https://mail.google.com/mail/u/?authuser=sender%40example.com#drafts?compose=message-id');
-  assert.equal(opened.length, 0, 'authorization flow navigates this tab without a second popup');
+  assert.equal(opened.length, 1, 'authorization flow opens a separate Gmail tab');
+  assert.equal(popups.at(-1).opener, null);
   assert.ok(nodes.status.children.some(child => child.href === 'https://mail.google.com/mail/u/?authuser=sender%40example.com#drafts'));
   assert.match(nodes['sender-note'].textContent, /sender@example.com/);
   await submit();
@@ -119,8 +120,13 @@ test('reuses valid authorization, renews expired or rejected tokens, and handles
   change();
   const beforeFallback = navigated.length;
   await submit();
-  assert.equal(navigated.length, beforeFallback + 1, 'blocked popup automatically navigates current tab');
+  assert.equal(navigated.length, beforeFallback, 'blocked popup keeps the helper tab open');
+  assert.ok(nodes.status.children.some(child => typeof child === 'string' && child.includes('could not open a new tab')));
   blockPopup = false;
+  const beforeRetry = draftCount;
+  await submit();
+  assert.equal(draftCount, beforeRetry, 'retry after blocked tab opens existing message without duplication');
+  assert.equal(navigated.length, beforeFallback + 1);
 
   now += 3_600_000;
   change();
