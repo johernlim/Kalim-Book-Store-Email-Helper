@@ -14,6 +14,7 @@ h1 { margin: 26px 0 10px; color: #d1f7eb; font-size: clamp(1.5rem, 5vw, 1.85rem)
 #popup-status:empty { display: none; }
 .field { margin-bottom: 22px; }
 label { display: block; color: #cce8e2; font-size: .9rem; font-weight: 600; margin-bottom: 9px; }
+.field-help { margin: 8px 0 0; color: #aebec7; font-size: .8rem; line-height: 1.5; }
 input { width: 100%; font: inherit; color: #e7edef; background: #111c22; border: 1px solid #3a474f; border-radius: 7px; padding: 14px; min-height: 50px; }
 input::placeholder { color: #82939e; }
 input:focus-visible, button:focus-visible { outline: 3px solid #a5e9d9; outline-offset: 4px; }

@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="styles.css?v=popup-remember-1">
   <script src="config.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="app.js?v=remove-file-1" type="module"></script>
+  <script src="app.js?v=receiver-validation-1" type="module"></script>
 </head>
 <body>
   <main class="card">
@@ -37,6 +37,7 @@
       <div class="field">
         <label for="email">Receiver email</label>
         <input id="email" name="email" type="email" placeholder="recipient@example.com" autocomplete="email" required>
+        <p class="field-help">Check the full address carefully. Gmail receivers use @gmail.com.</p>
       </div>
       <div class="field">
         <label for="document">Scanned documents</label>

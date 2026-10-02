@@ -1,11 +1,13 @@
 import { buildMessage, validateFiles } from './message.mjs';
 import { openPreview, closePreview, formatSize } from './preview.mjs';
+import { validateReceiverEmail } from './recipient.mjs';
 const form = document.querySelector('#email-form');
 const fileInput = document.querySelector('#document');
 const fileInfo = document.querySelector('#file-info');
 const fileList = document.querySelector('#file-list');
 const status = document.querySelector('#status');
 const titleInput = document.querySelector('#title');
+const emailInput = document.querySelector('#email');
 const senderNote = document.querySelector('#sender-note');
 const popupSetup = document.querySelector('#popup-setup');
 const popupStatus = document.querySelector('#popup-status');
@@ -83,6 +85,7 @@ function renderSelectedFiles() {
 }
 fileInput.addEventListener('change', renderSelectedFiles);
 titleInput.addEventListener('input', () => titleInput.setCustomValidity(''));
+emailInput.addEventListener('input', () => emailInput.setCustomValidity(validateReceiverEmail(emailInput.value)));
 form.addEventListener('input', () => { lastDraft = null; });
 function setBusy(value) {
   busy = value;
@@ -161,11 +164,12 @@ form.addEventListener('submit', (event) => {
   if (!popupCheckPassed) return;
   if (busy) return;
   titleInput.setCustomValidity(titleInput.value.trim() ? '' : 'Enter an email title.');
+  emailInput.setCustomValidity(validateReceiverEmail(emailInput.value));
   fileInput.setCustomValidity(validateFiles(Array.from(fileInput.files)));
   if (!form.reportValidity()) return;
   if (lastDraft) { navigateToGmail(lastDraft, reserveGmailWindow()); return; }
   if (!clientId) { status.textContent = 'Google setup is not complete. Add your Google OAuth client ID to config.js first.'; return; }
-  const input = { recipient: document.querySelector('#email').value.trim(), subject: titleInput.value.trim(), files: Array.from(fileInput.files) };
+  const input = { recipient: emailInput.value.trim(), subject: titleInput.value.trim(), files: Array.from(fileInput.files) };
   setBusy(true);
   if (accessToken && Date.now() < tokenExpiresAt) return createDraft(input, reserveGmailWindow());
   forgetToken();

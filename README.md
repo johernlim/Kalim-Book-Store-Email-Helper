@@ -14,6 +14,8 @@ Enter the receiver and select one or more files (up to **20 MB combined**). Ther
 
 PDFs render with locally hosted Mozilla PDF.js and Previous/Next page controls. Images use the browser's image decoder. Text files show as literal text (first 1 MB for large files). Unsupported formats, password-protected PDFs, and damaged files show an explanation without downloading or launching another application; they can still be attached. Previews stay on the device and do not upload documents to a preview service.
 
+The receiver field checks email syntax, domain structure, and the domain ending against a bundled snapshot of IANA's delegated top-level domains (1 October 2026). It also catches common Gmail domain typos and requires Gmail recipients to use `@gmail.com`. Other providers and domains with valid endings are allowed. These checks cannot prove that an individual domain or mailbox exists, so the user must still review the recipient in Gmail before sending. New top-level domains added after the bundled snapshot require a list update.
+
 Click **Sent**, choose the sender's Google account if prompted, and authorize access. The app creates one draft with **all selected files** attached, then attempts to open that message in Gmail's compose window with an empty body. Review it and click Gmail's Send button.
 
 When authorization is already valid, clicking Sent immediately opens a waiting tab and redirects it to Gmail after upload. After Google authorization, a separate waiting tab is opened for Gmail. The helper tab always stays open with its form and in-memory connection available for reuse. If a tab is blocked or closed, the site tries a new tab and provides a recovery link and instructions if it cannot open one. Clicking Sent again without changing the form reopens the saved message without creating a duplicate. Failed uploads close the waiting tab and leave the form available.
@@ -32,7 +34,7 @@ Serve the folder over HTTP, then open `http://localhost:8080`. Modules and OAuth
 python -c "import mimetypes,http.server; mimetypes.add_type('application/javascript','.mjs'); http.server.test(port=8080,bind='127.0.0.1')"
 ```
 
-Run `node --test --test-isolation=none app.test.mjs message.test.mjs preview.test.mjs` for authorization reuse, expiry, denied access, multiple binary attachments, Unicode, header injection, total size, and preview-type checks. Authorization tests simulate Google responses. Live Google authorization and draft creation require a configured client ID and a sender account and must be verified after setup.
+Run `node --test --test-isolation=none app.test.mjs message.test.mjs preview.test.mjs recipient.test.mjs` for authorization reuse, expiry, denied access, multiple binary attachments, Unicode, header injection, total size, and preview-type checks. Authorization tests simulate Google responses. Live Google authorization and draft creation require a configured client ID and a sender account and must be verified after setup.
 
 ## GitHub Pages
 

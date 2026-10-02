@@ -18,6 +18,7 @@ test('reuses valid authorization, renews expired or rejected tokens, and handles
   const nodes = Object.fromEntries(['email-form', 'document', 'file-info', 'file-list', 'status', 'title', 'sender-note', 'email', 'popup-setup', 'popup-status', 'check-popups'].map(id => [id, element()]));
   const form = nodes['email-form'];
   form.elements = [nodes.title, nodes.email, nodes.document];
+  form.reportValidity = () => !nodes.email.validationMessage;
   nodes.title.value = 'Kalim test';
   nodes.email.value = 'receiver@example.com';
   nodes.document.files = [new File(['harmless sample'], 'test.txt', { type: 'text/plain' }), new File(['second sample'], 'second.txt', { type: 'text/plain' })];
@@ -113,6 +114,16 @@ test('reuses valid authorization, renews expired or rejected tokens, and handles
   assert.match(nodes.document.validationMessage, /Choose at least one file/);
   nodes.document.files = originalFiles;
   nodes.document.listeners.change();
+
+  nodes.email.value = 'receiver@gmail.con';
+  submit();
+  assert.match(nodes.email.validationMessage, /@gmail.com/);
+  assert.equal(authRequests.length, 0, 'invalid receiver cannot start Google authorization');
+  nodes.email.value = 'receiver@outlook.com';
+  nodes.email.listeners.input();
+  assert.equal(nodes.email.validationMessage, '');
+  nodes.email.value = 'receiver@example.com';
+  nodes.email.listeners.input();
 
   submit();
   assert.equal(authRequests.length, 1);
